@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "swimmingtournamentproject",
+  "private_key_id": "bf668355205d1d09a535eb95e3c66a7f7d80a4a4",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCzMcFNYH6uRdJI\nJl/a5ft1YzchfWY3S5n2GVs0Ra0sfIxn5iN8NDod5iAoDfT8o/aRYkiI83Y9IjcX\nagab1gyH5+nRudipHw2h+lNrWnzdG+3j6L39qBPzD0s9cFbFoEQq9BIMZ06emXS5\nof8m00i+PT9/fPXwVwbdHZXZuleqKzB7HxDy+tjpMYrzAgiL3nVb6WW/FLao83Gq\nIfaGKvSZvkCP5gLwmlv/ddJ9zkiguRBmR1uL3pVPYMfrwZbl6u8QbKWrr5zVCiT5\nvSkfA6wETvC5xYWywzOC4xFdYjsIrlNNADOkjHgmlBeJtZ04q8gOCOsA4R30cJqH\nPrYB3rsBAgMBAAECggEAAJiuLCXhsg6LL0CKceHxUvASOUcvsYgrwmMN98fyFjtx\nY7CjRljtpxcSnROD0NnyWoRFWchWqMgt/wLUNA1TtBmYYIFx+EkhTFxXDfzKfNlo\nkqk+BaO7MkRHI7SVo1l/1JVEoJww6av41JvWi7BpFfIB/biCoIrHm/GK48NAIrG5\n6TJNmzRzBLGkePKKhqJwU4/KJSvbFgvdAVlwqf1U272Y02O9UIX90TzF2tHRWe44\nCE223CSjMnceOm4hQTjCkoFBZJbImWYFeXoOlCfz7PZewJgGBdShijMp1BXVMAhr\nZA6ZHsn94S8yuvUBVrKurnGA0y6L/rqYyokRn+TAAQKBgQD7vCp6vpbguht6/Zj2\nBthQAcO3sTykPl2Afd4M6EnwOKbkG5wk/6uFKrC4mfREmJQ/1labe8gcLrPYlsvQ\nIoqi62eYMO5KFDPC5yRZ3Gh+XELzCiPRl9dDGCyKr5ptbFMELvv3qqzIEIUlft8w\n77Pc95rmWDzdGzVLtxwJxuRFAQKBgQC2OvaUJDARP8S9Qh8EhfIX2tFgDYyoK4/d\n2gcpOPOIn1i2sYjbbpfiJvcqgYDpeu5uPmBY8zCgngga2LiHtSDeidyJCncpwW3u\neKqkdzx1M4JsWAS9ObIkjIKPMHO24epvkQvNMxqcqUI+4VZLxX8HQQ0GWUcuevB3\nAGtAJyx2AQKBgHjDvF1GMXt9zNEj982PWxaGwi3NiRoCETkjKPNoPJBRnT6xQCc/\nwDkSUdU9hkGiMPyvBr1wlH9wqDavoPcomvmtlPUeBDLlni9SU84IPtjfyf5uTuCt\nx0cYwcWGmL8FyI2pPJeD+X/A7R8fzlLbq53F6zm1+vzXoKnCHmFSWRABAoGAGdcA\nkf8Tpc6CCkgu98g6jPFlURZ6xHnw24eIDmtZ9RyLStSf0GW9Ob9GuwtECVd6Kb3E\nkbhiQ9RE1/G1MOEZORUZZYFLZmtcOD16DPovY3sbWlucyGw++3nFJaK8NcmRIaLS\nppVBh8dkcmAniXUGzzOFMkpEkq2yHV2814r2fgECgYAVl4LlLBXr74RoxfqBDrEU\nYADoCfnVMHWLgJ0e/zX1aIsYY7i6+eeKFlCQVGiJPRfwg0N/pv9vLkRHqJvdybIZ\nXbBt9ZnAZXZIC9j+xqEJundhkaLRqOYb3nQqSRZk6iCvJAAYI4Ew6Vhj0tWr/Erk\nCepcy3Y61+31ldBMMQbrrg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "livestream@swimmingtournamentproject.iam.gserviceaccount.com",
+  "client_id": "112656561170903229543",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/livestream%40swimmingtournamentproject.iam.gserviceaccount.com"
+}
