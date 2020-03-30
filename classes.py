@@ -1,38 +1,36 @@
-# class Track(object):
-#
-#     def __init__(self, track, lane_time, rank, lap, points):
-#         """Constructor"""
-#         self.track = track
-#         self.lane_time = lane_time
-#         self.rank = rank
-#         self.lap = lap
-#         self.points = points
-#
-#     def info(self):
-#         return '{} {} {} {} {}'.format(self.track, self.lane_time, self.rank, self.lap, self.points)
-#
-#
-# class Competitor(object):
-#
-#     def __init__(self, track, first_name=None, last_name=None):
-#         self.track = track
-#         self.first_name = first_name
-#         self.last_name = last_name
-#         self.full_name = None
-#
-#     def full_name(self):
-#         self.full_name = '{} {}'.format(self.first_name, self.last_name)
-#         return self.full_name
-#
-#     def info(self):
-#         return '{} {} {}'.format(self.track, self.first_name, self.last_name)
-#
+from constants import TRACK_UPDATE_INFO, PPL_UPDATE_INFO
+
+
+class Track(object):
+
+    def __init__(self, track, lane_time, rank, lap, points, raw_time):
+        """Constructor"""
+        self.track = track
+        self.lane_time = lane_time
+        self.rank = rank
+        self.lap = lap
+        self.points = points
+        self.raw_time = raw_time
+
+
+class Competitor(object):
+
+    def __init__(self, track, first_name='', last_name=''):
+        self.track = track
+        self.first_name = first_name
+        self.last_name = last_name
+
+    def full_name(self):
+        return '{} {} ({})'.format(self.first_name, self.last_name, self.track)
+
+    def full_name_with_track(self):
+        return '{} {} ({})'.format(self.first_name, self.last_name, self.track)
 
 
 class Info(object):
 
-    def __init__(self, track, first_name=None, last_name=None, lane_time=None, rank=None, lap=None, points=None,
-                 raw_time=None):
+    def __init__(self, track=-1, first_name='', last_name='', lane_time=-1, rank=-1, lap=-1, points=-1,
+                 raw_time=-1):
         self.track = track
         self.first_name = first_name
         self.last_name = last_name
@@ -41,34 +39,121 @@ class Info(object):
         self.lap = lap
         self.points = points
         self.raw_time = raw_time
-        self.full_name = None
 
     def full_name(self):
-        if (self.first_name is not None) and (self.last_name is not None):
-            self.full_name = '{} {}'.format(self.first_name, self.last_name)
-        else:
-            self.full_name = '[some name is empty]'
-        return self.full_name
+        return '{} {}'.format(self.first_name, self.last_name)
 
-    def to_string(self):
-        return "{} track: {}, first_name: {}, last_name: {}, lane_time: {}, lap: {}, raw_time: {}, rank: {} {}".format(
+    def full_name_with_track(self):
+        return '{} {} ({})'.format(self.first_name, self.last_name, self.track)
+
+    def spreadsheet_data(self):
+        return [str(self.rank), str(self.track), self.full_name(), str(self.lane_time)]
+
+    def spreadsheet_data_temporary_results(self):
+        return [str(self.track), self.full_name(), str(self.lane_time)]
+
+    def is_full(self):
+        return self.track != -1 and \
+               self.first_name is not '' and \
+               self.last_name is not '' and \
+               self.lane_time != -1 and \
+               self.rank != -1 and \
+               self.lap != -1 and \
+               self.points != -1
+
+    def isFinalLap(self, final_lap):
+        if self.lap == -1:
+            return False
+        if self.lap == final_lap:
+            return True
+
+    def __repr__(self):
+        return '{}"track": "{}", "first_name": "{}", "last_name": "{}", "rank": "{}", "lap": "{}", "lane_time": "{}", "raw_time": "{}", "spreadsheet_data": "{}"{}'.format(
             '{',
-            str(self.track), str(self.first_name),
-            str(self.last_name), str(self.lane_time),
-            str(self.lap), str(self.raw_time), str(self.rank),
+            self.track,
+            self.first_name,
+            self.last_name,
+            self.rank,
+            self.lap,
+            self.lane_time,
+            self.raw_time,
+            self.spreadsheet_data(),
             '}'
         )
 
-    # return "{}\"track\": \"{}\", \"first_name\": \"{}\", \"last_name\": \"{}\", \"lane_time\": \"{}\", \"lap\": \"{}\", \"raw_time\": \"{}\", rank: {} {}]".format(
+    def to_string(self):
+        return {
+            "track": self.track,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "rank": self.rank,
+            "lap": self.lap,
+            "lane_time": self.lane_time,
+            "raw_time": self.raw_time,
+            "spreadsheet_data": self.spreadsheet_data()
+        }
 
-    # return "{} track: {}, first_name: {}, last_name: {}, lane_time: {}, lap: {}, raw_time: {}, rank: {} {}"
-    def is_full(self):
-        return self.track is not None and \
-               self.first_name is not None and \
-               self.last_name is not None and \
-               self.first_name is not '' and \
-               self.last_name is not '' and \
-               self.lane_time is not None and \
-               self.rank is not None and \
-               self.lap is not None and \
-               self.points is not None
+
+class Heat(object):
+    current_heat: int
+    isSended: bool
+
+    def __init__(self, heat_number=-1, heat_name='', laps=-1, infos=None):
+        self.heat_number = heat_number
+        self.heat_name = heat_name
+        self.laps = laps
+        self.infos = infos
+
+    def get_info_by_track(self, track):
+        for i in self.infos:
+            if i.track == track:
+                return i
+
+    def add_info(self, info: Info, part=None):
+        if not self.infos:
+            self.infos = []
+            self.infos.append(info)
+        else:
+            if not part:
+                self.infos.append(info)
+            else:
+                track = info.track
+                for i in self.infos:
+                    if i.track == track:
+                        if part == PPL_UPDATE_INFO:
+                            i.first_name = info.first_name
+                            i.last_name = info.last_name
+                        elif part == TRACK_UPDATE_INFO:
+                            i.lane_time = info.lane_time
+                            i.rank = info.rank
+                            i.lap = info.lap
+                            i.points = info.points
+                            i.raw_time = info.raw_time
+                        break
+
+    def hasInfosByTrack(self, track: int):
+        if not self.infos or len(self.infos) == 0:
+            return False
+        for i in self.infos:
+            if i.track == track:
+                return True
+        return False
+
+    def isFull(self):
+        if self.laps == -1:
+            return False
+        if not self.infos or len(self.infos) == 0:
+            return False
+        for info in self.infos:
+            if not info.isFinalLap(self.laps):
+                return False
+        return True
+
+    def sort_by_rank(self):
+        return sorted(self.infos, key=lambda x: x.rank)
+
+    def __repr__(self):
+        return 'Heat=[heat_number: {} heat_name: {} laps: {} infos:{}]'.format(self.heat_number,
+                                                                               self.heat_name,
+                                                                               self.laps,
+                                                                               self.infos)

@@ -1,10 +1,107 @@
 from classes import *
 from constants import *
+from pprint import pprint
 
-print('-1' == '-1')
+from time_converter import in_minuts
 
-int(-1)
-print(" {} ".format('{}'))
+smas = ['Heat	HeatNumber	1',
+        'Heat	HeatName	Заплыв 1',
+        'Heat	Description	',
+        'Heat	StartTime	438000000',
+        'Heat	DistanceM	100',
+        'Heat	SpeedMS	0.00',
+        'Heat	Laps	2']
+
+for s in smas:
+    tmp = s.replace('\r', '')
+    tmp = tmp.split('\t')
+    print('mas: {} len: {}'.format(tmp, len(tmp)))
+
+
+class B(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
+    def print(self):
+        return self.name
+
+
+class A(object):
+    l: list
+
+    def __init__(self, inf: list, name: str):
+        self.inf = inf
+        self.name = name
+
+    def add_to_inf(self, data):
+        self.inf.append(data)
+
+    def print(self):
+        return 'name: {}\ninf: {}'.format(self.name, self.inf)
+
+
+b1 = B('b1')
+b2 = B('b2')
+b3 = B('b3')
+b4 = B('b4')
+
+
+# bm1 = [b1.print(), b2.print()]
+# bm2 = [b3.print(), b4.print()]
+#
+# a1 = A([b1.print(), b2.print()], 'a1')
+# a2 = A(bm1, 'a2')
+#
+# print(a1.print())
+# print(a2.print())
+#
+# a1.add_to_inf(b3)
+#
+# print(a1.print())
+# print(a2.print())
+#
+#
+# kek = [1,3,4,5]
+# kk = '{}'.format(kek)
+#
+# print(kk)
+
+
+class Heat(object):
+    current_heat: int
+
+    def __init__(self, heat_number=-1, heat_name='', laps=-1, infos=None):
+        self.heat_number = heat_number
+        self.heat_name = heat_name
+        self.laps = laps
+        self.infos = infos
+
+    def add_info(self, info: B):
+        if self.infos is None:
+            self.infos = []
+            self.infos.append(info)
+        else:
+            self.infos.append(info)
+
+    @staticmethod
+    def get_current_heat():
+        return Heat.current_heat
+
+    @staticmethod
+    def set_current_heat(heat: int):
+        Heat.current_heat = heat
+
+    def __repr__(self):
+        return 'heat_number: {}, heat_name: {}, laps: {}, infos: {}'. \
+            format(self.heat_number, self.heat_name, self.laps, self.infos)
+
+
 """
     Sniff packets and return a list of packets.
 

@@ -1,90 +1,107 @@
 from scapy.all import *
-import sys
-import argparse
+from operator import itemgetter
 from constants import *
 from packet_processing import *
-import json
-import io
-import datetime
+from sheets import *
 
-# отбросить знаки после запятой (не округляется)
-# отсортировать по рангу (rank)
+# 1) +
+# отбросить знаки после запятой (не округляется) [готово]
+# отсортировать по рангу (rank) [готово]
 
-path_to_log = 'res/log_{}'.format(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+# 2) ?
+# разделять данные на заплывы (Heat) [готово]
+# сделать пул процессов и передавать им данные, возможно использовать очередь [хз, вроде и так норм]
 
-IDX_KEY = 'index'
-INF_KEY = 'info'
-RANK_KEY = 'rank'
-IS_FULL_KEY = 'isfull'
-infos = []  # [..{'index': N, 'info': Info}..]
-log = {'result': []}
+heats = []
+
+
+def send_to_spreadsheet(heat: Heat):
+    print('heats: {}'.format(heats))
+    print("sorting...")
+    data = heat.sort_by_rank()
+    spd = []
+    for info in data:
+        spd.append(info.spreadsheet_data())
+    print("send to google sheet")
+    print('sended data: {}'.format(spd))
+    spreadsheet_processing(spd)
+    Heat.isSended = True
+    # proc = multiprocessing.Process(target=spreadsheet_processing, args=(sorted_infos,))
+    # daemon = threading.Thread(target=spreadsheet_processing, args=(sorted_infos,))
+    # daemon.setDaemon(True)
+    # daemon.start()
+    # proc.daemon = True
+    # proc.start()
 
 
 def handle_packet(pkt):
     try:
-        if pkt.haslayer('UDP'):
+        if pkt.haslayer('UDP') is True:
             udp = pkt['UDP']
             if pkt.haslayer(Raw) is True:
                 data = udp.getlayer(Raw).load
                 data = data.decode('utf-8')
                 data = data.replace('\r', '')
                 data = data.strip()
-                if len(data.split('\t')) > 3:
-                    if (LANE_TIME in data and UNUSED_TRACK not in data and LAP in data) or (
-                            (COMPETITOR in data) and ((FIRST_NAME in data) or (LAST_NAME in data))):
-                        # print("\t[LOG_HP] Infos len: {} | infos_data:{}".format(len(infos), infos))
-                        idx = int(data.split('\t')[1])
-                        check = False
-                        if len(infos) > 0:
-                            for obj in infos:
-                                ii = int(obj.get(IDX_KEY))
-                                if ii == idx:
-                                    inf = parsing_data(data, obj.get(INF_KEY))
-                                    obj[INF_KEY] = inf
-                                    check = True
+                tmp = data.split('\t')
+                """
+                HEAT = 'Heat'
+                HEAT_NUMBER = 'HeatNumber'
+                HEAT_NAME = 'HeatName'
+                HEAT_LAPS = 'Laps'
+                
+                self.heat_number = heat_number
+                self.heat_name = heat_name
+                self.laps = laps
+                self.infos = infos
+                """
+                # check that data have necessary heat/competitor/track
+                if ((HEAT in tmp) and ((HEAT_NUMBER in tmp) or (HEAT_NAME in tmp) or (HEAT_LAPS in tmp))) or \
+                        ((COMPETITOR in tmp) and ((FIRST_NAME in tmp) or (LAST_NAME in tmp))) or \
+                        (LANE_TIME in tmp and UNUSED_TRACK not in tmp and LAP in tmp):
+
+                    if HEAT_NUMBER in tmp:
+                        Heat.current_heat = int(tmp[2])
+
+                    if len(heats) == 0:
+                        heat = parsing_data(tmp)
+                        heats.append(heat)
+                        Heat.isSended = False
+                    else:
+                        is_new_heat = True
+                        for o in heats:
+                            if int(o.heat_number) == Heat.current_heat:
+                                parsing_data(tmp, o)
+                                is_new_heat = False
+                                break
+                        if is_new_heat:
+                            new_heat = parsing_data(tmp)
+                            heats.append(new_heat)
+                            Heat.isSended = False
+
+                    # print(heats)
+                    if not Heat.isSended:
+                        for o in heats:
+                            if int(o.heat_number) == Heat.current_heat:
+                                if o.isFull():
+                                    send_to_spreadsheet(o)
                                     break
-                            if check is False:
-                                inf = parsing_data(data)
-                                kekw = {IDX_KEY: idx, INF_KEY: inf}
-                                infos.append(kekw)
 
-                        else:
-                            inf = parsing_data(data)
-                            kekw = {IDX_KEY: idx, INF_KEY: inf}
-                            infos.append(kekw)
-
-                        for o in infos:
-                            o[RANK_KEY] = o[INF_KEY].rank
-                            o[IS_FULL_KEY] = o[INF_KEY].is_full()
-                            print("\t idx: {}\n\t {} isFull:{}".format(o[IDX_KEY], o[INF_KEY].to_string(),
-                                                                       o[IS_FULL_KEY]))
-                        print(len(log['result']))
-                        print()
-                        with io.open(path_to_log, 'w', encoding='utf-8') as file:
-                            log['result'] = create_log_info(infos)
-                            if len(log['result']) > 0:
-                                file.write(str(log))
-
-    except (UnicodeError, AttributeError):
+    except (UnicodeError, KeyError) as err:
+        print("Some do wrong...")
+        print(err)
         pass
-
-
-def create_log_info(info):
-    kek = []
-    for o in info:
-        if o[INF_KEY].is_full() is True:
-            kek.append({IDX_KEY: o[IDX_KEY], INF_KEY: o[INF_KEY].to_string()})
-    return kek
 
 
 def start_sniffing():
     dport = 26
-    bpf = 'udp and udp dst port {}'.format(dport)
+    bpf = 'udp and udp dst port 26'
 
     print("[*] Start sniffing...")
+    print("Sniff all packet from 26 port and UDP proto")
     # print(bpf is None)
     # if bpf is not None:
-    sniff(prn=handle_packet)
+    sniff(filter=bpf, prn=handle_packet)
     # sniff(filter=bpf, prn=handle_packet)
     print("[*] Stop sniffing")
 

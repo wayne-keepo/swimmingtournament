@@ -2,64 +2,103 @@ from classes import *
 from constants import *
 from time_converter import *
 
+"""
+mas: ['Heat', 'HeatNumber', '1'] len: 3
+mas: ['Heat', 'HeatName', 'Заплыв 1'] len: 3
+mas: ['Heat', 'Laps', '2'] len: 3
+"""
 
-def parsing_data(s, info=None):
-    print("\t\t[LOG_ED] Starting extract data...")
-    # Competitor\t	4	FirstName	Анастасия
-    #   0           1       2           3
-    # track, first_name=None, last_name=None, lane_time=None, rank=None, lap=None, points=None
 
-    s = s.replace('\r', '')
-    track = s.split('\t')[1]
-    print("\t\t\tInfos: {}".format(str(info)))
-    if info is None:
-        print("\t\t\tTrack number {}".format(track))
-        info = Info(track=track)
-        info = check_conditions(s, info)
+def parsing_data(data, heat=None):
+    if heat is None:
+        heat = Heat()
+        heat = check_conditions(data, heat)
     else:
-        info = check_conditions(s, info)
-    print("\t\t[LOG_ED] End extract data...")
-    return info
+        heat = check_conditions(data, heat)
+
+    if HEAT in data or len(data) > 3:
+        print("-----------------------------------------------------------------------------------")
+        print('Parsing data processing..')
+        print('Splitted data: {}'.format(data))
+        print('processing result: {}'.format(heat))
+        print("-----------------------------------------------------------------------------------")
+
+    return heat
 
 
-def check_conditions(s, info=Info):
-    print("check conditions...")
-    if COMPETITOR in s:
-        result = extract_ppl_info(s, info)
+def check_conditions(data, heat: Heat):
+    if HEAT in data:
+        result = extract_heat_info(data, heat)
         return result
-    elif (LANE_TIME in s) and (LAP in s) and (UNUSED_TRACK not in s):
-        result = extract_track_info(s, info)
-        return result
+    elif len(data) > 3:
+        if COMPETITOR in data:
+            result = extract_ppl_info(data, heat)
+            return result
+        elif (LANE_TIME in data) and (LAP in data):  # ???
+            result = extract_track_info(data, heat)
+            return result
 
 
-def extract_track_info(s, info=Info):
+def extract_heat_info(data, heat: Heat):
+    if HEAT_NUMBER in data:
+        heat.heat_number = int(data[2])
+    elif HEAT_NAME in data:
+        heat.heat_name = data[2]
+    elif HEAT_LAPS in data:
+        heat.laps = int(data[2])
+    return heat
+
+
+def extract_track_info(data, heat: Heat):
     # Time\t 3	 LaneTime	804319	Rank	5	Lap	 2	Points	0.00
     #   0    1      2         3       4     5    6   7     8     9
-    print("[LOG_ETI] Starting extract track info...")
-    print("check eq obj: " + str(info))
-    spl = s.split('\t')
-    print("Splited data: {}".format(spl))
-    seconds = int(spl[3])
+    track = int(data[1])
+    seconds = int(data[3])
     lane_time = in_minuts(seconds)
-    rank = int(spl[5])
-    lap = spl[7]
-    points = spl[9]
+    rank = int(data[5])
+    lap = int(data[7])
+    points = data[9]
+
+    check = True
+    if heat.hasInfosByTrack(track):
+        info = heat.get_info_by_track(track)
+    else:
+        info = Info(track=track)
+        check = False
+
     info.lane_time = lane_time
     info.raw_time = seconds
     info.rank = rank
     info.lap = lap
     info.points = points
-    print("[LOG_ETI] End extract track info...")
-    return info
+
+    if check:
+        heat.add_info(info=info, part=PPL_UPDATE_INFO)
+    else:
+        heat.add_info(info)
+
+    return heat
 
 
-def extract_ppl_info(s, info=Info):
-    print("[LOG_EPI] Starting extract ppl info...")
-    spl = s.split('\t')
-    name = spl[3]
-    if FIRST_NAME in s:
+def extract_ppl_info(data, heat: Heat):
+    track = int(data[1])
+    check = True
+
+    if heat.hasInfosByTrack(track):
+        info = heat.get_info_by_track(track)
+    else:
+        info = Info(track=track)
+        check = False
+
+    name = data[3]
+    if FIRST_NAME in data:
         info.first_name = name.strip()
-    elif LAST_NAME in s:
+    elif LAST_NAME in data:
         info.last_name = name.strip()
-    print("[LOG_EPI] End extract ppl info...")
-    return info
+
+    if check:
+        heat.add_info(info=info, part=PPL_UPDATE_INFO)
+    else:
+        heat.add_info(info)
+
+    return heat
