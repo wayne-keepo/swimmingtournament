@@ -3,11 +3,12 @@ import sys
 from operator import itemgetter
 from constants import *
 from packet_processing import *
-from sheets import *
-import json
+import sheets
+from multiprocessing import Process
 from pprint import pprint
 
-heats = []
+_heat = Heat()
+heats = [_heat]
 
 
 # забрать фамилии перед стартом (приходит после блока Heats) [!]  [дорожка(0-9), имя фамилия, клуб нейм]
@@ -15,6 +16,12 @@ heats = []
 # забирать номер заплыва и описание (event descr)
 
 # dummy = ['', '', '', '']
+
+
+def send_to_process(target, data=None):
+    daemon = Process(target=target, args=(data,))
+    daemon.daemon = True
+    daemon.start()
 
 
 def send_to_spreadsheet(heat: Heat):
@@ -26,8 +33,11 @@ def send_to_spreadsheet(heat: Heat):
         spd.append(info.spreadsheet_data())
     print('sended data: ')
     pprint(spd)
-    # spreadsheet_processing(spd)
+    send_to_process(target=sheets.spreadsheet_processing(spd), data=spd)
     Heat.isSended = True
+    Heat.isClean = False
+    print('-----------------------------------------------------------------')
+
 
 
 def handle_packet(pkt):
@@ -42,39 +52,29 @@ def handle_packet(pkt):
                     (LANE_TIME in tmp and UNUSED_TRACK not in tmp):
 
                 if HEAT_NUMBER in tmp:
-                    Heat.current_heat = int(tmp[2])
-
-                if len(heats) == 0:
-                    heat = parsing_data(tmp)
-                    heats.append(heat)
+                    if not Heat.isClean:
+                        send_to_process(sheets.cleaning())
+                        Heat.isClean = True
                     Heat.isSended = False
-                else:
-                    is_new_heat = True
-                    for o in heats:
-                        if int(o.heat_number) == Heat.current_heat:
-                            parsing_data(tmp, o)
-                            is_new_heat = False
-                            break
-                    if is_new_heat:
-                        new_heat = parsing_data(tmp)
-                        heats.append(new_heat)
-                        Heat.isSended = False
-
+                    Heat.current_heat = int(tmp[2])
+                # mb use one object for all? Try it
+                parsing_data(tmp, heats[0])
+                print(f'Heat info: {heats[0]}')
                 if not Heat.isSended:
-                    for o in heats:
-                        if int(o.heat_number) == Heat.current_heat:
-                            if o.isFull():
-                                send_to_spreadsheet(o)
-                                break
+                    h = heats[0]
+                    if h.isFull():
+                        send_to_spreadsheet(h)
+
+
 
     except (UnicodeError, AttributeError, KeyError) as err:
-        # print("Some do wrong...")
-        # print(err)
+        print("Some do wrong...")
+        print(err)
         pass
 
 
 def start_sniffing():
-    port = sys.argv[2]
+    # port = sys.argv[2]
 
     # dport = 26
     bpf = 'udp and udp dst port 26'
@@ -90,3 +90,28 @@ def start_sniffing():
 
 if __name__ == '__main__':
     start_sniffing()
+
+"""
+                if len(heats) == 0:
+                    heat = parsing_data(tmp, )
+                    heats.append(heat)
+                    Heat.isSended = False
+                else:
+                    is_new_heat = True
+                    for o in heats:
+                        if o.heat_number == Heat.current_heat:
+                            parsing_data(tmp, o)
+                            is_new_heat = False
+                            break
+                    if is_new_heat:
+                        new_heat = parsing_data(tmp)
+                        heats.append(new_heat)
+                        Heat.isSended = False
+
+                if not Heat.isSended:
+                    for o in heats:
+                        if int(o.heat_number) == Heat.current_heat:
+                            if o.isFull():
+                                send_to_spreadsheet(o)
+                                break
+"""

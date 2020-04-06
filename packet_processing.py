@@ -4,11 +4,7 @@ from time_converter import *
 
 
 def parsing_data(data, heat=None):
-    if heat is None:
-        heat = Heat()
-        heat = check_conditions(data, heat)
-    else:
-        heat = check_conditions(data, heat)
+    heat = check_conditions(data, heat)
 
     # if HEAT in data or len(data) > 3:
     #     print("-----------------------------------------------------------------------------------")
@@ -28,7 +24,7 @@ def check_conditions(data, heat: Heat):
         if COMPETITOR in data:
             result = extract_ppl_info(data, heat)
             return result
-        elif (LANE_TIME in data) and (LAP in data):  # ???
+        elif LANE_TIME in data:
             result = extract_track_info(data, heat)
             return result
 
@@ -37,7 +33,7 @@ def extract_heat_info(data, heat: Heat):
     if HEAT_NUMBER in data:
         heat.heat_number = int(data[2])
         heat.laps = -1
-        Heat.isSended = False
+        heat.fix_info()
     elif HEAT_LAPS in data:
         heat.laps = int(data[2])
     return heat

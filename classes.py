@@ -42,18 +42,21 @@ class Info(object):
             return True
 
     def __repr__(self):
-        return '{}"track": "{}", "first_name": "{}", "last_name": "{}", "rank": "{}", "lap": "{}", "lane_time": "{}", "raw_time": "{}", "spreadsheet_data": {} {}'.format(
-            '{',
-            self.track,
-            self.first_name,
-            self.last_name,
-            self.rank,
-            self.lap,
-            self.lane_time,
-            self.raw_time,
-            self.spreadsheet_data(),
-            '}'
-        )
+        return f'\n\t\t\t\t\t\t\t\t\t\t\t{self.track}, {self.lap} {self.full_name()}, {self.lane_time}'
+
+    # def __repr__(self):
+    #     return '{}"track": "{}", "first_name": "{}", "last_name": "{}", "rank": "{}", "lap": "{}", "lane_time": "{}", "raw_time": "{}", "spreadsheet_data": {} {}'.format(
+    #         '{',
+    #         self.track,
+    #         self.first_name,
+    #         self.last_name,
+    #         self.rank,
+    #         self.lap,
+    #         self.lane_time,
+    #         self.raw_time,
+    #         self.spreadsheet_data(),
+    #         '}'
+    #     )
 
     def to_string(self):
         return {
@@ -71,6 +74,7 @@ class Info(object):
 class Heat(object):
     current_heat: int
     isSended: bool
+    isClean = False
 
     def __init__(self, heat_number=-1, laps=-1, infos=None):
         self.heat_number = heat_number
@@ -103,6 +107,13 @@ class Heat(object):
                             i.points = info.points
                             i.raw_time = info.raw_time
                         break
+
+    def fix_info(self):
+        if self.infos is None or len(self.infos) == 0:
+            return
+        else:
+            for i in self.infos:
+                i.lap = -1  # it is bull shit, but it is necessary if the data is corrupted
 
     def hasInfosByTrack(self, track: int):
         if not self.infos or len(self.infos) == 0:
