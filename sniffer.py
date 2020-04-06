@@ -33,7 +33,7 @@ def send_to_spreadsheet(heat: Heat):
         spd.append(info.spreadsheet_data())
     print('sended data: ')
     pprint(spd)
-    send_to_process(target=sheets.spreadsheet_processing(spd), data=spd)
+    send_to_process(target=sheets.spreadsheet_processing, data=spd)
     Heat.isSended = True
     Heat.isClean = False
     print('-----------------------------------------------------------------')
@@ -52,9 +52,9 @@ def handle_packet(pkt):
                     (LANE_TIME in tmp and UNUSED_TRACK not in tmp):
 
                 if HEAT_NUMBER in tmp:
-                    if not Heat.isClean:
-                        send_to_process(sheets.cleaning())
-                        Heat.isClean = True
+                    # if not Heat.isClean:
+                    #     send_to_process(sheets.cleaning())
+                    #     Heat.isClean = True
                     Heat.isSended = False
                     Heat.current_heat = int(tmp[2])
                 # mb use one object for all? Try it
