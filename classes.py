@@ -1,32 +1,6 @@
 from constants import TRACK_UPDATE_INFO, PPL_UPDATE_INFO
 
 
-class Track(object):
-
-    def __init__(self, track, lane_time, rank, lap, points, raw_time):
-        """Constructor"""
-        self.track = track
-        self.lane_time = lane_time
-        self.rank = rank
-        self.lap = lap
-        self.points = points
-        self.raw_time = raw_time
-
-
-class Competitor(object):
-
-    def __init__(self, track, first_name='', last_name=''):
-        self.track = track
-        self.first_name = first_name
-        self.last_name = last_name
-
-    def full_name(self):
-        return '{} {} ({})'.format(self.first_name, self.last_name, self.track)
-
-    def full_name_with_track(self):
-        return '{} {} ({})'.format(self.first_name, self.last_name, self.track)
-
-
 class Info(object):
 
     def __init__(self, track=-1, first_name='', last_name='', lane_time=-1, rank=-1, lap=-1, points=-1,
@@ -41,10 +15,10 @@ class Info(object):
         self.raw_time = raw_time
 
     def full_name(self):
-        return '{} {}'.format(self.first_name, self.last_name)
+        return f'{self.first_name} {self.last_name}'
 
     def full_name_with_track(self):
-        return '{} {} ({})'.format(self.first_name, self.last_name, self.track)
+        return f'{self.first_name} {self.last_name} ({self.track})'
 
     def spreadsheet_data(self):
         return [str(self.rank), str(self.track), self.full_name(), str(self.lane_time)]
@@ -68,7 +42,7 @@ class Info(object):
             return True
 
     def __repr__(self):
-        return '{}"track": "{}", "first_name": "{}", "last_name": "{}", "rank": "{}", "lap": "{}", "lane_time": "{}", "raw_time": "{}", "spreadsheet_data": "{}"{}'.format(
+        return '{}"track": "{}", "first_name": "{}", "last_name": "{}", "rank": "{}", "lap": "{}", "lane_time": "{}", "raw_time": "{}", "spreadsheet_data": {} {}'.format(
             '{',
             self.track,
             self.first_name,
@@ -98,9 +72,8 @@ class Heat(object):
     current_heat: int
     isSended: bool
 
-    def __init__(self, heat_number=-1, heat_name='', laps=-1, infos=None):
+    def __init__(self, heat_number=-1, laps=-1, infos=None):
         self.heat_number = heat_number
-        self.heat_name = heat_name
         self.laps = laps
         self.infos = infos
 
@@ -153,7 +126,4 @@ class Heat(object):
         return sorted(self.infos, key=lambda x: x.rank)
 
     def __repr__(self):
-        return '\nHeat=[heat_number: {} heat_name: {} laps: {} infos:{}]'.format(self.heat_number,
-                                                                               self.heat_name,
-                                                                               self.laps,
-                                                                               self.infos)
+        return f'[heat_number: {self.heat_number} laps: {self.laps} infos:{self.infos}]'

@@ -1,4 +1,5 @@
 from scapy.all import *
+import sys
 from operator import itemgetter
 from constants import *
 from packet_processing import *
@@ -7,6 +8,7 @@ import json
 from pprint import pprint
 
 heats = []
+
 
 # забрать фамилии перед стартом (приходит после блока Heats) [!]  [дорожка(0-9), имя фамилия, клуб нейм]
 # очищать конечный результат после прихода данных о новом заплыве[!]
@@ -30,45 +32,40 @@ def send_to_spreadsheet(heat: Heat):
 
 def handle_packet(pkt):
     try:
-        if pkt.haslayer('UDP') is True:
-            udp = pkt['UDP']
-            if pkt.haslayer(Raw) is True:
-                data = udp.getlayer(Raw).load
-                data = data.decode('utf-8')
-                data = data.replace('\r', '')
-                data = data.strip()
-                tmp = data.split('\t')
+        if pkt.haslayer(Raw) is True:
+            data = pkt.getlayer(Raw).load
+            data = data.decode('utf-8')
+            tmp = data.replace('\r', '').strip().split('\t')
 
-                if ((HEAT in tmp) and ((HEAT_NUMBER in tmp) or (HEAT_NAME in tmp) or (HEAT_LAPS in tmp))) or \
-                        ((COMPETITOR in tmp) and ((FIRST_NAME in tmp) or (LAST_NAME in tmp))) or \
-                        (LANE_TIME in tmp and UNUSED_TRACK not in tmp and LAP in tmp):
+            if ((HEAT_NUMBER in tmp) or (HEAT_LAPS in tmp)) or \
+                    ((FIRST_NAME in tmp) or (LAST_NAME in tmp)) or \
+                    (LANE_TIME in tmp and UNUSED_TRACK not in tmp):
 
-                    if HEAT_NUMBER in tmp:
-                        Heat.current_heat = int(tmp[2])
+                if HEAT_NUMBER in tmp:
+                    Heat.current_heat = int(tmp[2])
 
-                    if len(heats) == 0:
-                        heat = parsing_data(tmp)
-                        heats.append(heat)
+                if len(heats) == 0:
+                    heat = parsing_data(tmp)
+                    heats.append(heat)
+                    Heat.isSended = False
+                else:
+                    is_new_heat = True
+                    for o in heats:
+                        if int(o.heat_number) == Heat.current_heat:
+                            parsing_data(tmp, o)
+                            is_new_heat = False
+                            break
+                    if is_new_heat:
+                        new_heat = parsing_data(tmp)
+                        heats.append(new_heat)
                         Heat.isSended = False
-                    else:
-                        is_new_heat = True
-                        for o in heats:
-                            if int(o.heat_number) == Heat.current_heat:
-                                parsing_data(tmp, o)
-                                is_new_heat = False
-                                break
-                        if is_new_heat:
-                            new_heat = parsing_data(tmp)
-                            heats.append(new_heat)
-                            Heat.isSended = False
 
-                    # print(heats)
-                    if not Heat.isSended:
-                        for o in heats:
-                            if int(o.heat_number) == Heat.current_heat:
-                                if o.isFull():
-                                    send_to_spreadsheet(o)
-                                    break
+                if not Heat.isSended:
+                    for o in heats:
+                        if int(o.heat_number) == Heat.current_heat:
+                            if o.isFull():
+                                send_to_spreadsheet(o)
+                                break
 
     except (UnicodeError, AttributeError, KeyError) as err:
         # print("Some do wrong...")
@@ -77,6 +74,8 @@ def handle_packet(pkt):
 
 
 def start_sniffing():
+    port = sys.argv[2]
+
     # dport = 26
     bpf = 'udp and udp dst port 26'
 

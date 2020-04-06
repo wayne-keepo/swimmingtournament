@@ -38,8 +38,6 @@ def extract_heat_info(data, heat: Heat):
         heat.heat_number = int(data[2])
         heat.laps = -1
         Heat.isSended = False
-    elif HEAT_NAME in data:
-        heat.heat_name = data[2]
     elif HEAT_LAPS in data:
         heat.laps = int(data[2])
     return heat
