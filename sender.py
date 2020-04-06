@@ -154,11 +154,11 @@ def test_case_2():
 
 def global_test():
     # path = 'resources/kekw.txt'
-    path = 'resources/raw_kekw'
+    path = 'resources/testdata2'
     with io.open(path, encoding='utf-8') as file:
         for line in file:
             send(IP(dst="127.0.0.1") / UDP(dport=26, sport=1049) / Raw(load=line), count=1)
-        # time.sleep(2)
+            # time.sleep(0.05)
 
 # second_fast()
 # test_case_1()

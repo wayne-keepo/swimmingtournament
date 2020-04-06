@@ -153,7 +153,7 @@ class Heat(object):
         return sorted(self.infos, key=lambda x: x.rank)
 
     def __repr__(self):
-        return 'Heat=[heat_number: {} heat_name: {} laps: {} infos:{}]'.format(self.heat_number,
+        return '\nHeat=[heat_number: {} heat_name: {} laps: {} infos:{}]'.format(self.heat_number,
                                                                                self.heat_name,
                                                                                self.laps,
                                                                                self.infos)

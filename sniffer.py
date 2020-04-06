@@ -3,35 +3,29 @@ from operator import itemgetter
 from constants import *
 from packet_processing import *
 from sheets import *
-
-# 1) +
-# отбросить знаки после запятой (не округляется) [готово]
-# отсортировать по рангу (rank) [готово]
-
-# 2) ?
-# разделять данные на заплывы (Heat) [готово]
-# сделать пул процессов и передавать им данные, возможно использовать очередь [хз, вроде и так норм]
+import json
+from pprint import pprint
 
 heats = []
 
+# забрать фамилии перед стартом (приходит после блока Heats) [!]  [дорожка(0-9), имя фамилия, клуб нейм]
+# очищать конечный результат после прихода данных о новом заплыве[!]
+# забирать номер заплыва и описание (event descr)
+
+# dummy = ['', '', '', '']
+
 
 def send_to_spreadsheet(heat: Heat):
-    print('heats: {}'.format(heats))
-    print("sorting...")
+    print('-----------------------------------------------------------------')
+    print(f'current heat: {Heat.current_heat}')
     data = heat.sort_by_rank()
     spd = []
     for info in data:
         spd.append(info.spreadsheet_data())
-    print("send to google sheet")
-    print('sended data: {}'.format(spd))
-    spreadsheet_processing(spd)
+    print('sended data: ')
+    pprint(spd)
+    # spreadsheet_processing(spd)
     Heat.isSended = True
-    # proc = multiprocessing.Process(target=spreadsheet_processing, args=(sorted_infos,))
-    # daemon = threading.Thread(target=spreadsheet_processing, args=(sorted_infos,))
-    # daemon.setDaemon(True)
-    # daemon.start()
-    # proc.daemon = True
-    # proc.start()
 
 
 def handle_packet(pkt):
@@ -44,18 +38,7 @@ def handle_packet(pkt):
                 data = data.replace('\r', '')
                 data = data.strip()
                 tmp = data.split('\t')
-                """
-                HEAT = 'Heat'
-                HEAT_NUMBER = 'HeatNumber'
-                HEAT_NAME = 'HeatName'
-                HEAT_LAPS = 'Laps'
-                
-                self.heat_number = heat_number
-                self.heat_name = heat_name
-                self.laps = laps
-                self.infos = infos
-                """
-                # check that data have necessary heat/competitor/track
+
                 if ((HEAT in tmp) and ((HEAT_NUMBER in tmp) or (HEAT_NAME in tmp) or (HEAT_LAPS in tmp))) or \
                         ((COMPETITOR in tmp) and ((FIRST_NAME in tmp) or (LAST_NAME in tmp))) or \
                         (LANE_TIME in tmp and UNUSED_TRACK not in tmp and LAP in tmp):
@@ -87,21 +70,21 @@ def handle_packet(pkt):
                                     send_to_spreadsheet(o)
                                     break
 
-    except (UnicodeError, KeyError) as err:
-        print("Some do wrong...")
-        print(err)
+    except (UnicodeError, AttributeError, KeyError) as err:
+        # print("Some do wrong...")
+        # print(err)
         pass
 
 
 def start_sniffing():
-    dport = 26
+    # dport = 26
     bpf = 'udp and udp dst port 26'
 
     print("[*] Start sniffing...")
-    print("Sniff all packet from 26 port and UDP proto")
+    # print("Sniff all packet from 26 port and UDP proto")
     # print(bpf is None)
     # if bpf is not None:
-    sniff(filter=bpf, prn=handle_packet)
+    sniff(filter=bpf, prn=handle_packet, store=0)
     # sniff(filter=bpf, prn=handle_packet)
     print("[*] Stop sniffing")
 

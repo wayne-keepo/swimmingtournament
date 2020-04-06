@@ -102,6 +102,15 @@ class Heat(object):
             format(self.heat_number, self.heat_name, self.laps, self.infos)
 
 
+l = [['1', '2', 'Михаил Васильков', '0:51.07'], ['2', '1', 'Андрей Настин', '0:51.68']]
+print('mas: {} len: {}'.format(l, len(l)))
+
+dummy = ['', '', '', '']
+
+for item in range(len(l), 10):
+    l.append(dummy)
+
+print('mas: {} len: {}'.format(l, len(l)))
 """
     Sniff packets and return a list of packets.
 

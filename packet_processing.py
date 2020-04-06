@@ -2,12 +2,6 @@ from classes import *
 from constants import *
 from time_converter import *
 
-"""
-mas: ['Heat', 'HeatNumber', '1'] len: 3
-mas: ['Heat', 'HeatName', 'Заплыв 1'] len: 3
-mas: ['Heat', 'Laps', '2'] len: 3
-"""
-
 
 def parsing_data(data, heat=None):
     if heat is None:
@@ -16,12 +10,12 @@ def parsing_data(data, heat=None):
     else:
         heat = check_conditions(data, heat)
 
-    if HEAT in data or len(data) > 3:
-        print("-----------------------------------------------------------------------------------")
-        print('Parsing data processing..')
-        print('Splitted data: {}'.format(data))
-        print('processing result: {}'.format(heat))
-        print("-----------------------------------------------------------------------------------")
+    # if HEAT in data or len(data) > 3:
+    #     print("-----------------------------------------------------------------------------------")
+    #     print('Parsing data processing..')
+    #     print('Splitted data: {}'.format(data))
+    #     print('processing result: {}'.format(heat))
+    #     print("-----------------------------------------------------------------------------------")
 
     return heat
 
@@ -42,6 +36,8 @@ def check_conditions(data, heat: Heat):
 def extract_heat_info(data, heat: Heat):
     if HEAT_NUMBER in data:
         heat.heat_number = int(data[2])
+        heat.laps = -1
+        Heat.isSended = False
     elif HEAT_NAME in data:
         heat.heat_name = data[2]
     elif HEAT_LAPS in data:
@@ -50,8 +46,6 @@ def extract_heat_info(data, heat: Heat):
 
 
 def extract_track_info(data, heat: Heat):
-    # Time\t 3	 LaneTime	804319	Rank	5	Lap	 2	Points	0.00
-    #   0    1      2         3       4     5    6   7     8     9
     track = int(data[1])
     seconds = int(data[3])
     lane_time = in_minuts(seconds)
